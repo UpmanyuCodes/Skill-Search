@@ -2,7 +2,7 @@
 {% block title %}My profile - Skill Search{% endblock %}
 {% block content %}
 <div class="container" style="max-width:720px">
-  <h1 class="fw-bold">My profile</h1>
+  <h1 class="mb-3">My profile</h1>
   <form method="post" enctype="multipart/form-data" class="form-card">{% csrf_token %}
     <div class="row">
       {% field form.first_name "col-md-6 mb-3" %}

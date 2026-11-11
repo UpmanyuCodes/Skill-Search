@@ -2,7 +2,7 @@
 {% block title %}Create account - Skill Search{% endblock %}
 {% block content %}
 <div class="auth-card" style="max-width:560px">
-  <h1 class="h4 fw-bold mb-1">Create your free account</h1>
+  <h1 class="mb-2">Create your free account</h1>
   <p class="text-secondary small mb-4">Contact and book local professionals in minutes.</p>
   <form method="post">{% csrf_token %}
     {% for e in form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ e }}</div>{% endfor %}

@@ -2,7 +2,7 @@
 {% block title %}Saved providers - Skill Search{% endblock %}
 {% block content %}
 <div class="container">
-  <h1 class="h3 fw-bold mb-3"><i class="bi bi-heart-fill text-danger"></i> Saved providers</h1>
+  <h1 class="mb-4">Saved professionals</h1>
   {% if favorites %}
   <div class="row g-3">
     {% for f in favorites %}{% with p=f.provider %}<div class="col-md-6 col-lg-4">{% include "partials/provider_card.html" %}</div>{% endwith %}{% endfor %}

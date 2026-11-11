@@ -2,7 +2,7 @@
 {% block title %}Messages - Skill Search{% endblock %}
 {% block content %}
 <div class="container" style="max-width:800px">
-  <h1 class="h3 fw-bold mb-3"><i class="bi bi-chat-dots"></i> Messages</h1>
+  <h1 class="mb-4">Messages</h1>
   <div class="panel">
     {% for c in conversations %}
       {% if c.customer == user %}{% with other=c.provider.user %}

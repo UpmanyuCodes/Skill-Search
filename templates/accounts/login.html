@@ -2,7 +2,7 @@
 {% block title %}Log in - Skill Search{% endblock %}
 {% block content %}
 <div class="auth-card">
-  <h1 class="h4 fw-bold mb-1">Welcome back</h1>
+  <h1 class="mb-2">Welcome back</h1>
   <p class="text-secondary small mb-4">Log in to contact providers, manage bookings and chat.</p>
   <form method="post">{% csrf_token %}
     {% for e in form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ e }}</div>{% endfor %}

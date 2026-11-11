@@ -2,7 +2,7 @@
 {% block title %}Review {{ req.provider.name }} - Skill Search{% endblock %}
 {% block content %}
 <div class="auth-card">
-  <h1 class="h4 fw-bold">Rate {{ req.provider.name }}</h1>
+  <h1>Rate {{ req.provider.name }}</h1>
   <p class="text-secondary small">For: {{ req.title }} ({{ req.preferred_date|date:"d M Y" }})</p>
   <form method="post">{% csrf_token %}
     <div class="rating-input mb-2">

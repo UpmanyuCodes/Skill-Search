@@ -2,7 +2,7 @@
 {% block title %}{% if creating %}Offer your service{% else %}Edit service listing{% endif %} - Skill Search{% endblock %}
 {% block content %}
 <div class="container" style="max-width:900px">
-  <h1 class="fw-bold">{% if creating %}Offer your service{% else %}Edit your service listing{% endif %}</h1>
+  <h1 class="mb-3">{% if creating %}Offer your service{% else %}Edit your service listing{% endif %}</h1>
   {% if profile %}
   <p>Status: <span class="badge bg-{% if profile.is_verified %}success{% elif profile.verification_status == 'rejected' %}danger{% else %}warning text-dark{% endif %}">{{ profile.get_verification_status_display }}</span>
     {% if profile.verification_note %}<span class="small text-secondary">&middot; {{ profile.verification_note }}</span>{% endif %}

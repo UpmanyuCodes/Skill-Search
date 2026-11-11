@@ -47,7 +47,7 @@
     <section class="col-lg-9">
       <div class="page-head d-flex flex-wrap justify-content-between align-items-end mb-4 gap-2">
         <div>
-          <h1 class="h2 mb-1">{% if category %}{{ category.name }} services{% elif params.q %}Results for "{{ params.q }}"{% else %}All services{% endif %}
+          <h1 class="mb-1">{% if category %}{{ category.name }} services{% elif params.q %}Results for "{{ params.q }}"{% else %}All services{% endif %}
             {% if params.has_location %}near you{% elif params.city %}in {{ params.city|title }}{% endif %}</h1>
           <div class="text-secondary">{{ total }} verified professional{{ total|pluralize }}</div>
         </div>
