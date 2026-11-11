@@ -50,6 +50,10 @@ class Command(BaseCommand):
 
         cities = list(CITIES)
         new = []
+        # Guarantee at least one provider per category near the demo user.
+        from services.models import Category
+        for cat in Category.objects.all():
+            new.append(create_test_provider(category=cat, city="Delhi", rng=rng))
         for i in range(opts["providers"]):
             # Weight towards Delhi so the demo user sees plenty nearby.
             city = "Delhi" if i % 3 == 0 else rng.choice(cities)
