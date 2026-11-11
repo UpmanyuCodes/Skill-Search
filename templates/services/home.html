@@ -1,6 +1,7 @@
 {% extends "base.html" %}{% load skill_tags %}
 {% block content %}
 <section class="hero">
+  <div class="hero-blobs"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
   <div class="container">
     <div class="row align-items-center g-5">
       <div class="col-lg-6">
@@ -23,7 +24,7 @@
           <span id="hero-status" class="small ms-1"></span>
         </div>
         <div class="hero-chips">
-          {% for c in categories|slice:":5" %}<a href="{{ c.get_absolute_url }}">{{ c.name }}</a>{% endfor %}
+          {% for c in categories|slice:":5" %}<a class="{{ c|tone }}" href="{{ c.get_absolute_url }}"><i class="bi bi-{{ c.icon }}"></i> {{ c.name }}</a>{% endfor %}
         </div>
       </div>
 
@@ -35,7 +36,7 @@
             {% with p=top_providers.0 %}
             <div class="scene-card scene-main">
               <div class="d-flex gap-3 align-items-center">
-                <span class="avatar">{% if p %}{{ p.user.initials }}{% else %}RK{% endif %}</span>
+                <span class="avatar {{ p.category|tone }}">{% if p %}{{ p.user.initials }}{% else %}RK{% endif %}</span>
                 <div>
                   <div class="fw-bold">{% if p %}{{ p.name }}{% else %}Ravi Kumar{% endif %} <i class="bi bi-patch-check-fill verified"></i></div>
                   <div class="small text-secondary">{% if p %}{{ p.category.name }}, {{ p.city }}{% else %}Electrician, Delhi{% endif %}</div>
@@ -56,6 +57,7 @@
               <div class="mt-1">{% stars 5 %}</div>
             </div>
             {% endwith %}
+            <span class="scene-chip"><i class="bi bi-geo-alt-fill"></i> 2.4 km away</span>
             <div class="scene-card scene-note">
               <div class="d-flex align-items-center gap-3">
                 <span class="scene-icon"><i class="bi bi-check-lg"></i></span>
@@ -72,34 +74,32 @@
 <section class="stat-band">
   <div class="container">
     <div class="row g-0">
-      <div class="col-6 col-md-3"><div class="stat-card"><div class="num" data-count="{{ stats.providers }}">{{ stats.providers }}</div><div class="lbl">Verified professionals</div></div></div>
-      <div class="col-6 col-md-3"><div class="stat-card"><div class="num" data-count="{{ stats.categories }}">{{ stats.categories }}</div><div class="lbl">Services</div></div></div>
-      <div class="col-6 col-md-3"><div class="stat-card"><div class="num" data-count="{{ stats.jobs }}">{{ stats.jobs }}</div><div class="lbl">Jobs completed</div></div></div>
-      <div class="col-6 col-md-3"><div class="stat-card"><div class="num" data-count="{{ stats.customers }}">{{ stats.customers }}</div><div class="lbl">Customers</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card tone-blue"><div class="num" data-count="{{ stats.providers }}">{{ stats.providers }}</div><div class="lbl">Verified professionals</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card tone-orange"><div class="num" data-count="{{ stats.categories }}">{{ stats.categories }}</div><div class="lbl">Services</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card tone-green"><div class="num" data-count="{{ stats.jobs }}">{{ stats.jobs }}</div><div class="lbl">Jobs completed</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card tone-pink"><div class="num" data-count="{{ stats.customers }}">{{ stats.customers }}</div><div class="lbl">Customers</div></div></div>
     </div>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <div class="row g-5">
-      <div class="col-lg-4">
-        <div class="eyebrow mb-3">Services</div>
-        <h2 class="section-title">Whatever needs doing.</h2>
-        <p class="section-sub mt-3">Choose a service to see who is available near you.</p>
+    <div class="d-flex justify-content-between align-items-end mb-5">
+      <div><div class="eyebrow mb-3">Services</div><h2 class="section-title mb-0">Whatever needs doing.</h2></div>
+      <a href="{% url 'services:search' %}?city=" class="d-none d-md-inline small">Browse everyone <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="row g-3">
+      {% for c in categories %}
+      <div class="col-6 col-md-4 col-lg-3">
+        <a class="cat-tile {{ c|tone }}" href="{{ c.get_absolute_url }}" data-tilt="7">
+          <span class="cat-icon"><i class="bi bi-{{ c.icon }}"></i></span>
+          <i class="bi bi-arrow-up-right arrow"></i>
+          <div class="cat-name">{{ c.name }}</div>
+          <div class="cat-desc d-none d-sm-block">{{ c.description }}</div>
+          <div class="count">{{ c.n }} professional{{ c.n|pluralize }}</div>
+        </a>
       </div>
-      <div class="col-lg-8">
-        <div class="cat-list">
-          {% for c in categories %}
-          <a class="cat-row" href="{{ c.get_absolute_url }}">
-            <span class="idx">{{ forloop.counter|stringformat:"02d" }}</span>
-            <span class="cat-name">{{ c.name }}<span class="cat-desc">{{ c.description }}</span></span>
-            <span class="count">{{ c.n }} professional{{ c.n|pluralize }}</span>
-            <i class="bi bi-arrow-right arrow"></i>
-          </a>
-          {% endfor %}
-        </div>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -122,11 +122,11 @@
   <div class="container">
     <div class="eyebrow mb-3">How it works</div>
     <h2 class="section-title mb-5">Four steps. No guesswork.</h2>
-    <div class="row g-4">
-      <div class="col-6 col-lg-3"><div class="step-card"><span class="step-num">01</span><h6>Search</h6><p>Say what you need and where. Results are sorted by distance and rating.</p></div></div>
-      <div class="col-6 col-lg-3"><div class="step-card"><span class="step-num">02</span><h6>Compare</h6><p>Read real reviews. Check experience, prices and working hours.</p></div></div>
-      <div class="col-6 col-lg-3"><div class="step-card"><span class="step-num">03</span><h6>Contact</h6><p>Call, WhatsApp, chat in the app or send a booking request.</p></div></div>
-      <div class="col-6 col-lg-3"><div class="step-card"><span class="step-num">04</span><h6>Review</h6><p>Rate the job when it's done and help your neighbours choose well.</p></div></div>
+    <div class="row g-3">
+      <div class="col-6 col-lg-3"><div class="step-card tone-blue"><span class="step-num"><i class="bi bi-search"></i></span><h6>Search</h6><p>Say what you need and where. Results are sorted by distance and rating.</p></div></div>
+      <div class="col-6 col-lg-3"><div class="step-card tone-orange"><span class="step-num"><i class="bi bi-sliders"></i></span><h6>Compare</h6><p>Read real reviews. Check experience, prices and working hours.</p></div></div>
+      <div class="col-6 col-lg-3"><div class="step-card tone-green"><span class="step-num"><i class="bi bi-chat-dots"></i></span><h6>Contact</h6><p>Call, WhatsApp, chat in the app or send a booking request.</p></div></div>
+      <div class="col-6 col-lg-3"><div class="step-card tone-pink"><span class="step-num"><i class="bi bi-star-fill"></i></span><h6>Review</h6><p>Rate the job when it's done and help your neighbours choose well.</p></div></div>
     </div>
   </div>
 </section>
@@ -140,7 +140,7 @@
         <p>List your service for free and find customers in your own neighbourhood.</p>
       </div>
       <div>
-        <a href="{% if user.is_authenticated %}{% url 'accounts:become_provider' %}{% else %}{% url 'accounts:signup_provider' %}{% endif %}" class="btn btn-primary btn-lg">Join as a professional</a>
+        <a href="{% if user.is_authenticated %}{% url 'accounts:become_provider' %}{% else %}{% url 'accounts:signup_provider' %}{% endif %}" class="btn btn-white btn-lg">Join as a professional</a>
       </div>
     </div>
   </div>

@@ -14,9 +14,9 @@
 
   <div class="row g-4">
     <div class="col-lg-8">
-      <div class="profile-header">
+      <div class="profile-header {{ provider.category|tone }}">
         <div class="d-flex flex-wrap gap-4 align-items-center">
-          {% if provider.user.avatar %}<img src="{{ provider.user.avatar.url }}" class="avatar avatar-lg" alt="">{% else %}<span class="avatar avatar-lg">{{ provider.user.initials }}</span>{% endif %}
+          {% if provider.user.avatar %}<img src="{{ provider.user.avatar.url }}" class="avatar avatar-lg" alt="">{% else %}<span class="avatar avatar-lg {{ provider.category|tone }}">{{ provider.user.initials }}</span>{% endif %}
           <div class="flex-grow-1">
             <h1 class="mb-1">{{ provider.name }}
               {% if provider.is_verified %}<i class="bi bi-patch-check-fill verified fs-5" title="ID verified"></i>{% endif %}</h1>

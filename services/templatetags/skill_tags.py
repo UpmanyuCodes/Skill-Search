@@ -43,6 +43,19 @@ def qs_replace(context, **kwargs):
     return query.urlencode()
 
 
+TONES = ["blue", "orange", "green", "pink", "teal", "amber", "red", "sky"]
+
+
+@register.filter
+def tone(obj):
+    """A stable colour class for a category (or any object / number)."""
+    key = getattr(obj, "pk", obj)
+    try:
+        return "tone-" + TONES[(int(key) - 1) % len(TONES)]
+    except (TypeError, ValueError):
+        return "tone-blue"
+
+
 STATUS_COLORS = {"pending": "warning", "accepted": "primary", "declined": "secondary",
                  "completed": "success", "cancelled": "secondary", "verified": "success", "rejected": "danger"}
 

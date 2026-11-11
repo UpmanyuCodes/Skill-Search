@@ -141,7 +141,7 @@
       });
     }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
     const fold = window.innerHeight;
-    document.querySelectorAll("[data-reveal], .cat-row, .provider-card, .step-card, .panel, .form-card, .cta-card").forEach(function (el) {
+    document.querySelectorAll("[data-reveal], .cat-tile, .provider-card, .step-card, .panel, .form-card, .cta-card").forEach(function (el) {
       if (el.getBoundingClientRect().top < fold) return;  // already on screen: leave it alone
       const siblings = el.parentElement && el.parentElement.parentElement ? Array.prototype.indexOf.call(el.parentElement.parentElement.children, el.parentElement) : 0;
       el.style.setProperty("--d", Math.min(Math.max(siblings, 0), 6) * 60 + "ms");

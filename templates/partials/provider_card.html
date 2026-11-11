@@ -1,7 +1,7 @@
 {% load skill_tags %}
 <div class="provider-card">
   <div class="d-flex gap-3 align-items-start">
-    {% if p.user.avatar %}<img src="{{ p.user.avatar.url }}" class="avatar" alt="">{% else %}<span class="avatar">{{ p.user.initials }}</span>{% endif %}
+    {% if p.user.avatar %}<img src="{{ p.user.avatar.url }}" class="avatar" alt="">{% else %}<span class="avatar {{ p.category|tone }}">{{ p.user.initials }}</span>{% endif %}
     <div class="flex-grow-1" style="min-width:0">
       <div class="d-flex justify-content-between align-items-start">
         <a href="{{ p.get_absolute_url }}" class="name">{{ p.name }}</a>
@@ -11,7 +11,7 @@
         </form>
         {% endif %}
       </div>
-      <div class="small text-secondary"><i class="bi bi-{{ p.category.icon }}"></i> {{ p.category.name }}
+      <div class="small text-secondary {{ p.category|tone }}"><i class="bi bi-{{ p.category.icon }} tone-ink"></i> {{ p.category.name }}
         {% if p.is_verified %}<span class="verified ms-1" title="ID verified"><i class="bi bi-patch-check-fill"></i> Verified</span>{% endif %}
       </div>
       <div class="small mt-1">{% stars p.rating_avg %} <span class="text-secondary">{{ p.rating_avg|floatformat:1 }} ({{ p.rating_count }})</span></div>
