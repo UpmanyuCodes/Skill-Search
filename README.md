@@ -12,6 +12,7 @@ A Django web app that connects people with **verified local service providers**:
 - Filters: minimum rating, max price, available now, emergency service, home visit
 - Sort by best match, nearest, rating, price, experience
 - Map of results (Leaflet + OpenStreetMap, no API key needed)
+- Live in-app chat that updates without reloading
 - Several ways to get in touch: phone call, WhatsApp, email, in-app chat, booking request
 - Booking requests with date, time, address and an "urgent" flag; track and cancel them on the dashboard
 - Reviews and star ratings, only allowed after a completed booking (one per job)

@@ -1,12 +1,13 @@
 {% extends "base.html" %}{% load skill_tags %}
-{% block title %}{% if category %}{{ category.name }}s{% else %}Find services{% endif %} - Skill Search{% endblock %}
+{% block title %}{% if category %}{{ category.name }} services{% else %}Find services{% endif %} - Skill Search{% endblock %}
 {% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
 {% block content %}
-<div class="container mt-3">
+<div class="container">
   <div class="row g-4">
     <aside class="col-lg-3">
-      <form method="get" class="filter-panel" id="filters">
-        <h6 class="fw-bold mb-3"><i class="bi bi-funnel"></i> Filters</h6>
+      <button class="btn btn-light w-100 d-lg-none mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#filters"><i class="bi bi-sliders"></i> Filters</button>
+      <form method="get" class="filter-panel collapse d-lg-block" id="filters">
+        <h6 class="fw-bold mb-3"><i class="bi bi-sliders"></i> Filters</h6>
         <div class="mb-3"><label class="form-label small fw-semibold">Keyword</label>
           <input name="q" value="{{ params.q }}" class="form-control" placeholder="e.g. geyser, maths"></div>
         <div class="mb-3"><label class="form-label small fw-semibold">Service</label>
@@ -44,11 +45,11 @@
     </aside>
 
     <section class="col-lg-9">
-      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+      <div class="page-head d-flex flex-wrap justify-content-between align-items-end mb-4 gap-2">
         <div>
-          <h1 class="h4 fw-bold mb-0">{% if category %}{{ category.name }}s{% elif params.q %}Results for "{{ params.q }}"{% else %}All services{% endif %}
+          <h1 class="h2 mb-1">{% if category %}{{ category.name }} services{% elif params.q %}Results for "{{ params.q }}"{% else %}All services{% endif %}
             {% if params.has_location %}near you{% elif params.city %}in {{ params.city|title }}{% endif %}</h1>
-          <div class="text-secondary small">{{ total }} verified provider{{ total|pluralize }} found</div>
+          <div class="text-secondary">{{ total }} verified professional{{ total|pluralize }}</div>
         </div>
         <form method="get" class="d-flex align-items-center gap-2">
           {% for key, value in request.GET.items %}{% if key != "sort" and key != "page" %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
@@ -59,10 +60,10 @@
         </form>
       </div>
 
-      {% if map_points %}<div id="map" class="mb-3"></div>{% endif %}
+      {% if map_points %}<div id="map" class="mb-4"></div>{% endif %}
 
       {% if page.object_list %}
-      <div class="row g-3">
+      <div class="row g-4">
         {% for p in page.object_list %}<div class="col-md-6 col-xl-4">{% include "partials/provider_card.html" %}</div>{% endfor %}
       </div>
       {% if page.has_other_pages %}
@@ -75,7 +76,7 @@
       {% else %}
       <div class="empty-state panel">
         <i class="bi bi-search"></i>
-        <h5 class="mt-3">No providers match yet</h5>
+        <h5 class="mt-3">No professionals match yet</h5>
         <p>Try removing a filter, widening the radius or searching another city.</p>
         {% if TEST_MODE %}<a href="{% url 'services:test_tools' %}" class="btn btn-outline-primary">Add test providers near you</a>{% endif %}
       </div>
@@ -92,12 +93,13 @@
   (function () {
     const points = JSON.parse(document.getElementById("map-data").textContent);
     const map = L.map("map", { scrollWheelZoom: false });
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { subdomains: "abcd",
-      maxZoom: 18, attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { referrerPolicy: "strict-origin-when-cross-origin",
+      maxZoom: 18, attribution: "&copy; OpenStreetMap contributors"
     }).addTo(map);
+    const pin = L.divIcon({ className: "", html: '<div class="map-pin"></div>', iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28] });
     const bounds = [];
     points.forEach(function (p) {
-      const m = L.marker([p.lat, p.lng]).addTo(map);
+      const m = L.marker([p.lat, p.lng], { icon: pin }).addTo(map);
       const name = document.createElement("div");
       name.innerHTML = "<strong></strong><br><span></span><br><a>View profile</a>";
       name.querySelector("strong").textContent = p.name;
@@ -107,7 +109,7 @@
       bounds.push([p.lat, p.lng]);
     });
     {% if params.has_location %}
-    L.circleMarker([{{ params.lat }}, {{ params.lng }}], { radius: 8, color: "#e11d48", fillOpacity: .9 }).addTo(map).bindPopup("You are here");
+    L.marker([{{ params.lat }}, {{ params.lng }}], { icon: L.divIcon({ className: "", html: '<div class="map-me"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }), zIndexOffset: 1000 }).addTo(map).bindPopup("You are here");
     bounds.push([{{ params.lat }}, {{ params.lng }}]);
     {% endif %}
     map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });

@@ -229,3 +229,50 @@ class BookingFlowTests(TestCase):
         self.customer.refresh_from_db()
         self.assertEqual(self.customer.role, User.Role.PROVIDER)
         self.assertContains(self.client.get(reverse("accounts:dashboard")), "waiting for ID verification")
+
+
+class PrivacyAndLiveChatTests(TestCase):
+    def setUp(self):
+        self.provider = create_test_provider("Doc Owner", Category.objects.get(slug="plumber"), city="Delhi",
+                                             rng=random.Random(5))
+        self.customer = make_customer()
+
+    def test_id_document_is_private(self):
+        self.provider.id_document.save("secret.pdf", SimpleUploadedFile("secret.pdf", b"%PDF secret"))
+        url = self.provider.id_document.url
+        self.assertTrue(url.startswith("/private/"))
+        self.assertEqual(self.client.get(url).status_code, 302)  # anonymous -> login
+        self.client.force_login(self.customer)
+        self.assertEqual(self.client.get(url).status_code, 404)  # other users can't see it
+        self.client.force_login(self.provider.user)
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        resp.close()
+        self.provider.id_document.delete()
+
+    def test_chat_poll_returns_only_new_messages_from_other_person(self):
+        convo = Conversation.objects.create(customer=self.customer, provider=self.provider)
+        mine = convo.messages.create(sender=self.customer, body="Hi")
+        theirs = convo.messages.create(sender=self.provider.user, body="Hello, how can I help?")
+        self.client.force_login(self.customer)
+        url = reverse("services:conversation_poll", args=[convo.pk])
+        data = self.client.get(url, {"after": mine.pk}).json()
+        self.assertEqual([m["id"] for m in data["messages"]], [theirs.pk])
+        theirs.refresh_from_db()
+        self.assertTrue(theirs.is_read)
+        self.assertEqual(self.client.get(url, {"after": theirs.pk}).json()["messages"], [])
+        self.client.force_login(make_customer("outsider"))
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+    def test_invalid_booking_keeps_form_open_with_errors(self):
+        self.client.force_login(self.customer)
+        resp = self.client.post(reverse("services:book", args=[self.provider.slug]), {
+            "title": "Tap", "preferred_date": "2000-01-01", "address": "12 MG Road", "contact_phone": "9123456789"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.context["open_booking"])
+        self.assertContains(resp, "Pick today or a future date.")
+        self.assertContains(resp, "12 MG Road")
+
+    def test_404_page(self):
+        resp = self.client.get("/pro/nobody-here/")
+        self.assertEqual(resp.status_code, 404)

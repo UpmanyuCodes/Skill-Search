@@ -3,9 +3,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count, F, Q
-from django.http import Http404, HttpResponseForbidden, JsonResponse
+from django.http import FileResponse, Http404, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from accounts.models import User
@@ -19,7 +20,7 @@ from .testdata import create_test_provider, ensure_categories
 def home(request):
     categories = Category.objects.annotate(
         n=Count("providers", filter=Q(providers__verification_status=ProviderProfile.Verification.VERIFIED))
-    )
+    ).order_by("order", "name")
     top = ProviderProfile.objects.verified().select_related("user", "category").order_by("-rating_avg", "-rating_count")[:6]
     stats = {
         "providers": ProviderProfile.objects.verified().count(),
@@ -65,7 +66,7 @@ def category_detail(request, slug):
     return redirect(f"{reverse('services:search')}?category={category.slug}")
 
 
-def provider_detail(request, slug):
+def provider_detail(request, slug, booking_form=None):
     provider = get_object_or_404(ProviderProfile.objects.select_related("user", "category"), slug=slug)
     is_owner = request.user.is_authenticated and provider.user_id == request.user.id
     if not provider.is_verified and not (is_owner or request.user.is_staff):
@@ -96,7 +97,8 @@ def provider_detail(request, slug):
         "rating_breakdown": rating_breakdown,
         "similar": similar,
         "is_favorite": request.user.is_authenticated and Favorite.objects.filter(user=request.user, provider=provider).exists(),
-        "booking_form": ServiceRequestForm(initial=initial),
+        "booking_form": booking_form or ServiceRequestForm(initial=initial),
+        "open_booking": booking_form is not None,
         "report_form": ReportForm(),
     })
 
@@ -126,9 +128,8 @@ def book_provider(request, slug):
             request.user.save(update_fields=changed)
         messages.success(request, f"Request sent to {provider.name}. You'll see their response on your dashboard.")
         return redirect("accounts:dashboard")
-    for field, errors in form.errors.items():
-        messages.error(request, f"{form.fields[field].label if field in form.fields else ''}: {' '.join(errors)}")
-    return redirect(f"{provider.get_absolute_url()}#book")
+    # Show the page again with what they typed and the errors next to each field.
+    return provider_detail(request, slug, booking_form=form)
 
 
 @login_required
@@ -265,6 +266,32 @@ def conversation(request, pk):
         "form": form,
         "conversations": _user_conversations(request.user)[:15],
     })
+
+
+@login_required
+@require_GET
+def conversation_poll(request, pk):
+    """New messages from the other person since ``after`` (used for live chat)."""
+    convo = get_object_or_404(Conversation, pk=pk)
+    if not convo.includes(request.user):
+        raise Http404
+    after = request.GET.get("after", "0")
+    after = int(after) if after.isdigit() else 0
+    new = list(convo.messages.filter(pk__gt=after).exclude(sender=request.user))
+    if new:
+        convo.messages.filter(pk__in=[m.pk for m in new]).update(is_read=True)
+    return JsonResponse({"messages": [
+        {"id": m.pk, "body": m.body, "time": timezone.localtime(m.created_at).strftime("%d %b, %H:%M")} for m in new
+    ]})
+
+
+@login_required
+def verification_document(request, path):
+    """ID documents are private: only staff and the provider themself may open them."""
+    profile = get_object_or_404(ProviderProfile, id_document=path)
+    if not (request.user.is_staff or profile.user_id == request.user.id):
+        raise Http404
+    return FileResponse(profile.id_document.open("rb"))
 
 
 # --- Testing tool -----------------------------------------------------------

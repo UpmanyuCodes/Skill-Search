@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Chat with {{ other.display_name }} - Skill Search{% endblock %}
 {% block content %}
-<div class="container mt-3">
+<div class="container">
   <div class="row g-4">
     <div class="col-lg-4 d-none d-lg-block">
       <div class="panel p-2">
@@ -31,18 +31,19 @@
             <a href="tel:{{ other.phone }}" class="btn btn-sm btn-success"><i class="bi bi-telephone"></i></a>
           {% endif %}
         </div>
-        <div class="chat-window" id="chat-window">
+        <div class="chat-window" id="chat-window" data-poll="{% url 'services:conversation_poll' convo.pk %}" data-last="{{ chat_messages.last.pk|default:0 }}">
           {% for m in chat_messages %}
             <div class="bubble {% if m.sender == user %}me{% else %}them{% endif %}">{{ m.body }}<span class="time">{{ m.created_at|date:"d M, H:i" }}{% if m.sender == user and m.is_read %} &middot; seen{% endif %}</span></div>
           {% empty %}
-            <div class="text-center text-secondary small py-5">Say hello and describe what you need.</div>
+            <div class="text-center text-secondary small py-5" data-empty>Say hello and describe what you need.</div>
           {% endfor %}
           <div id="bottom"></div>
         </div>
-        <form method="post" class="d-flex gap-2 mt-3">{% csrf_token %}
+        <form method="post" class="d-flex gap-2 mt-3" data-chat>{% csrf_token %}
           <div class="flex-grow-1">{{ form.body }}</div>
-          <button class="btn btn-primary align-self-end"><i class="bi bi-send"></i></button>
+          <button class="btn btn-primary align-self-end" aria-label="Send"><i class="bi bi-arrow-up"></i></button>
         </form>
+        <div class="form-text">Enter to send, Shift + Enter for a new line.</div>
       </div>
     </div>
   </div>

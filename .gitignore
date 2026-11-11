@@ -7,3 +7,4 @@ staticfiles/
 .env
 .idea/
 .vscode/
+private_media/

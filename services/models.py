@@ -1,6 +1,7 @@
 import math
 
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Avg, Count
@@ -21,6 +22,11 @@ def haversine_km(lat1, lon1, lat2, lon2):
     dl = math.radians(lon2 - lon1)
     a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
     return 2 * r * math.asin(math.sqrt(a))
+
+
+def private_storage():
+    """ID documents live outside MEDIA_ROOT and are served only to staff/owner."""
+    return FileSystemStorage(location=settings.PRIVATE_MEDIA_ROOT, base_url="/private/")
 
 
 class Category(models.Model):
@@ -105,7 +111,7 @@ class ProviderProfile(models.Model):
     verification_status = models.CharField(max_length=10, choices=Verification.choices, default=Verification.PENDING)
     id_type = models.CharField(max_length=10, choices=IdType.choices, blank=True)
     id_number_last4 = models.CharField(max_length=4, blank=True, help_text="Only the last 4 characters are stored")
-    id_document = models.FileField(upload_to="verification/", blank=True)
+    id_document = models.FileField(upload_to="verification/", blank=True, storage=private_storage)
     verification_note = models.CharField(max_length=255, blank=True)
     verified_at = models.DateTimeField(null=True, blank=True)
     is_test = models.BooleanField(default=False, help_text="Created through the testing tool")

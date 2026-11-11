@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Sign up - Skill Search{% endblock %}
 {% block content %}
-<div class="container mt-4" style="max-width:860px">
-  <h1 class="fw-bold text-center">Join Skill Search</h1>
+<div class="container" style="max-width:860px">
+  <h1 class="section-title text-center mt-4">Join Skill Search.</h1>
   <p class="text-center text-secondary mb-4">How do you want to use the site?</p>
   <div class="row g-4">
-    <div class="col-md-6"><a class="role-card" href="{% url 'accounts:signup_customer' %}">
-      <i class="bi bi-house-heart"></i>
+    <div class="col-md-6"><a class="role-card" data-tilt="6" href="{% url 'accounts:signup_customer' %}">
+      <span class="role-icon"><i class="bi bi-house-heart"></i></span>
       <h4 class="fw-bold mt-3">I need a service</h4>
       <p class="text-secondary mb-0">Find verified plumbers, electricians, tutors and more near your home. Free forever.</p>
     </a></div>
-    <div class="col-md-6"><a class="role-card" href="{% url 'accounts:signup_provider' %}">
-      <i class="bi bi-person-workspace"></i>
+    <div class="col-md-6"><a class="role-card" data-tilt="6" href="{% url 'accounts:signup_provider' %}">
+      <span class="role-icon"><i class="bi bi-person-workspace"></i></span>
       <h4 class="fw-bold mt-3">I offer a service</h4>
       <p class="text-secondary mb-0">List your skills, get verified and receive booking requests from customers nearby.</p>
     </a></div>

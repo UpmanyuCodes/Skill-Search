@@ -59,6 +59,12 @@ class ProfileForm(StyledFormMixin, forms.ModelForm):
                   "latitude", "longitude")
         widgets = {"latitude": forms.HiddenInput(), "longitude": forms.HiddenInput()}
 
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get("avatar")
+        if avatar and hasattr(avatar, "size") and avatar.size > 3 * 1024 * 1024:
+            raise forms.ValidationError("Image too large (max 3 MB).")
+        return avatar
+
     def clean_email(self):
         email = self.cleaned_data["email"].lower()
         if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():

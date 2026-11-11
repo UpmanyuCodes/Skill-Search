@@ -116,6 +116,8 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+# Verification documents are never served as public media.
+PRIVATE_MEDIA_ROOT = BASE_DIR / "private_media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -133,3 +135,7 @@ import sys  # noqa: E402
 
 if len(sys.argv) > 1 and sys.argv[1] == "test":
     PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
+# Map tile servers (OpenStreetMap, CARTO) refuse requests that carry no Referer.
+# Django's default "same-origin" strips it, so send just the site origin instead.
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Page not found - Skill Search{% endblock %}
+{% block content %}
+<div class="container text-center" style="padding:6rem 1rem">
+  <div class="eyebrow mb-2">Error 404</div>
+  <h1 class="section-title">This page took the day off.</h1>
+  <p class="section-sub">The link may be old, or the profile is not verified yet.</p>
+  <a href="{% url 'services:home' %}" class="btn btn-primary btn-lg mt-2">Back to home</a>
+  <a href="{% url 'services:search' %}" class="btn btn-light btn-lg mt-2">Find a service</a>
+</div>
+{% endblock %}

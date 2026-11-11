@@ -2,8 +2,8 @@
 {% block title %}{{ provider.name }} - {{ provider.category.name }} in {{ provider.city }} | Skill Search{% endblock %}
 {% block head %}{% if provider.has_location %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endif %}{% endblock %}
 {% block content %}
-<div class="container mt-3">
-  <nav class="small mb-3"><a href="{% url 'services:search' %}">Search</a> / <a href="{{ provider.category.get_absolute_url }}">{{ provider.category.name }}</a> / {{ provider.name }}</nav>
+<div class="container">
+  <nav class="crumbs mb-3"><a href="{% url 'services:search' %}">Search</a> / <a href="{{ provider.category.get_absolute_url }}">{{ provider.category.name }}</a> / {{ provider.name }}</nav>
 
   {% if not provider.is_verified %}
   <div class="alert alert-warning"><i class="bi bi-hourglass-split"></i>
@@ -26,10 +26,10 @@
           {% if is_owner %}<a href="{% url 'accounts:provider_edit' %}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a>{% endif %}
         </div>
         <div class="row g-3 mt-3 text-center">
-          <div class="col-6 col-md-3"><div class="fw-bold fs-5">{{ provider.experience_years }} yrs</div><div class="small text-secondary">Experience</div></div>
-          <div class="col-6 col-md-3"><div class="fw-bold fs-5">{{ provider.jobs_completed }}</div><div class="small text-secondary">Jobs done here</div></div>
-          <div class="col-6 col-md-3"><div class="fw-bold fs-5">{% if provider.rate %}&#8377;{{ provider.rate|floatformat:0 }}{% else %}On quote{% endif %}</div><div class="small text-secondary">{% if provider.rate %}{{ provider.get_rate_unit_display }}{% else %}Price{% endif %}</div></div>
-          <div class="col-6 col-md-3"><div class="fw-bold fs-5">{% if distance is not None %}{{ distance|km }}{% else %}{{ provider.service_radius_km }} km{% endif %}</div><div class="small text-secondary">{% if distance is not None %}From you{% else %}Travel radius{% endif %}</div></div>
+          <div class="col-6 col-md-3"><div class="metric"><div class="fw-bold fs-5">{{ provider.experience_years }} yrs</div><div class="small text-secondary">Experience</div></div></div>
+          <div class="col-6 col-md-3"><div class="metric"><div class="fw-bold fs-5">{{ provider.jobs_completed }}</div><div class="small text-secondary">Jobs done here</div></div></div>
+          <div class="col-6 col-md-3"><div class="metric"><div class="fw-bold fs-5">{% if provider.rate %}&#8377;{{ provider.rate|floatformat:0 }}{% else %}On quote{% endif %}</div><div class="small text-secondary">{% if provider.rate %}{{ provider.get_rate_unit_display }}{% else %}Price{% endif %}</div></div></div>
+          <div class="col-6 col-md-3"><div class="metric"><div class="fw-bold fs-5">{% if distance is not None %}{{ distance|km }}{% else %}{{ provider.service_radius_km }} km{% endif %}</div><div class="small text-secondary">{% if distance is not None %}From you{% else %}Travel radius{% endif %}</div></div></div>
         </div>
       </div>
 
@@ -52,7 +52,7 @@
         <h6 class="fw-bold mt-4">Skills</h6>
         {% for s in provider.skill_list %}<span class="chip">{{ s }}</span>{% endfor %}
         {% endif %}
-        {% if provider.has_location %}<div id="map" class="mt-4" style="height:240px"></div>{% endif %}
+        {% if provider.has_location %}<div id="map" class="mt-4" style="height:260px"></div>{% endif %}
       </div>
 
       <div class="panel mt-4" id="reviews">
@@ -80,7 +80,7 @@
       </div>
 
       {% if similar %}
-      <h5 class="fw-bold mt-4">Other {{ provider.category.name|lower }}s in {{ provider.city }}</h5>
+      <h5 class="fw-bold mt-4">More {{ provider.category.name|lower }} professionals in {{ provider.city }}</h5>
       <div class="row g-3">{% for p in similar %}<div class="col-md-6">{% include "partials/provider_card.html" %}</div>{% endfor %}</div>
       {% endif %}
     </div>
@@ -118,7 +118,7 @@
         </div>
 
         {% if user.is_authenticated and not is_owner %}
-        <div class="collapse mt-3" id="book">
+        <div class="collapse mt-3 {% if open_booking %}show{% endif %}" id="book">
           <hr>
           <h6 class="fw-bold">Booking request</h6>
           <form method="post" action="{% url 'services:book' provider.slug %}">{% csrf_token %}
@@ -155,9 +155,9 @@
   (function () {
     const lat = {{ provider.latitude|stringformat:"f" }}, lng = {{ provider.longitude|stringformat:"f" }};
     const map = L.map("map", { scrollWheelZoom: false }).setView([lat, lng], 13);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { subdomains: "abcd", maxZoom: 18, attribution: "&copy; OpenStreetMap contributors &copy; CARTO" }).addTo(map);
-    L.circle([lat, lng], { radius: {{ provider.service_radius_km }} * 1000, color: "#4f46e5", fillOpacity: .08 }).addTo(map);
-    L.marker([lat, lng]).addTo(map).bindPopup("Approximate service area");
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { referrerPolicy: "strict-origin-when-cross-origin", maxZoom: 18, attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+    L.circle([lat, lng], { radius: {{ provider.service_radius_km }} * 1000, color: "#0071e3", weight: 1.5, fillOpacity: .07 }).addTo(map);
+    L.marker([lat, lng], { icon: L.divIcon({ className: "", html: '<div class="map-pin"></div>', iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28] }) }).addTo(map).bindPopup("Approximate service area");
   })();
 </script>
 {% endif %}
