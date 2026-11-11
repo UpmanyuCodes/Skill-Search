@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{% if creating %}Offer your service{% else %}Edit service listing{% endif %} - Skill Search{% endblock %}
+{% block content %}
+<div class="container mt-3" style="max-width:900px">
+  <h1 class="fw-bold">{% if creating %}Offer your service{% else %}Edit your service listing{% endif %}</h1>
+  {% if profile %}
+  <p>Status: <span class="badge bg-{% if profile.is_verified %}success{% elif profile.verification_status == 'rejected' %}danger{% else %}warning text-dark{% endif %}">{{ profile.get_verification_status_display }}</span>
+    {% if profile.verification_note %}<span class="small text-secondary">&middot; {{ profile.verification_note }}</span>{% endif %}
+    &middot; <a href="{{ profile.get_absolute_url }}">View public page</a></p>
+  {% else %}
+  <p class="text-secondary">Your customer account stays the same &mdash; you'll just get a provider dashboard too.</p>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    {% include "accounts/_provider_fields.html" %}
+    <button class="btn btn-primary btn-lg w-100 mb-4">{% if creating %}Create listing &amp; submit for verification{% else %}Save changes{% endif %}</button>
+  </form>
+</div>
+{% endblock %}

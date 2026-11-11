@@ -1,0 +1,117 @@
+{% extends "base.html" %}{% load skill_tags %}
+{% block title %}{% if category %}{{ category.name }}s{% else %}Find services{% endif %} near you - Skill Search{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
+{% block content %}
+<div class="container mt-3">
+  <div class="row g-4">
+    <aside class="col-lg-3">
+      <form method="get" class="filter-panel" id="filters">
+        <h6 class="fw-bold mb-3"><i class="bi bi-funnel"></i> Filters</h6>
+        <div class="mb-3"><label class="form-label small fw-semibold">Keyword</label>
+          <input name="q" value="{{ params.q }}" class="form-control" placeholder="e.g. geyser, maths"></div>
+        <div class="mb-3"><label class="form-label small fw-semibold">Service</label>
+          <select name="category" class="form-select"><option value="">All services</option>
+            {% for c in categories %}<option value="{{ c.slug }}" {% if c.slug == params.category %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+          </select></div>
+        <div class="mb-3"><label class="form-label small fw-semibold">Location</label>
+          {% if params.has_location %}
+            <div class="small mb-2 text-success"><i class="bi bi-crosshair"></i> Using your location</div>
+            <input type="hidden" name="lat" id="f-lat" value="{{ params.lat }}"><input type="hidden" name="lng" id="f-lng" value="{{ params.lng }}">
+            <label class="form-label small">Within <span id="radius-val">{{ params.radius|floatformat:0 }}</span> km</label>
+            <input type="range" name="radius" min="1" max="50" value="{{ params.radius|floatformat:0 }}" class="form-range" oninput="document.getElementById('radius-val').textContent=this.value">
+            <a href="?{% if params.q %}q={{ params.q|urlencode }}&{% endif %}category={{ params.category }}&city=" class="small">Search by city instead</a>
+          {% else %}
+            <input name="city" value="{{ params.city }}" class="form-control mb-2" placeholder="City, area or pincode">
+            <input type="hidden" name="lat" id="f-lat"><input type="hidden" name="lng" id="f-lng">
+            <button type="button" class="btn btn-outline-primary btn-sm w-100" data-locate data-lat="#f-lat" data-lng="#f-lng" data-status="#f-status" data-submit><i class="bi bi-crosshair"></i> Near me</button>
+            <div id="f-status" class="small"></div>
+          {% endif %}
+        </div>
+        <div class="mb-3"><label class="form-label small fw-semibold">Minimum rating</label>
+          <select name="min_rating" class="form-select">
+            <option value="">Any</option>
+            {% for r in "432" %}<option value="{{ r }}" {% if params.min_rating|floatformat:0 == r %}selected{% endif %}>{{ r }}+ stars</option>{% endfor %}
+          </select></div>
+        <div class="mb-3"><label class="form-label small fw-semibold">Max price (&#8377;)</label>
+          <input type="number" name="max_price" min="0" value="{% if params.max_price %}{{ params.max_price|floatformat:0 }}{% endif %}" class="form-control"></div>
+        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="available" value="1" id="f-av" {% if params.available %}checked{% endif %}><label class="form-check-label small" for="f-av">Available now</label></div>
+        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="emergency" value="1" id="f-em" {% if params.emergency %}checked{% endif %}><label class="form-check-label small" for="f-em">Emergency service</label></div>
+        <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" name="home_visit" value="1" id="f-hv" {% if params.home_visit %}checked{% endif %}><label class="form-check-label small" for="f-hv">Home visit</label></div>
+        <input type="hidden" name="sort" value="{{ params.sort }}">
+        <button class="btn btn-primary w-100">Apply filters</button>
+        <a href="{% url 'services:search' %}?city=" class="btn btn-link btn-sm w-100 mt-1">Clear all</a>
+      </form>
+    </aside>
+
+    <section class="col-lg-9">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+          <h1 class="h4 fw-bold mb-0">{% if category %}{{ category.name }}s{% elif params.q %}Results for "{{ params.q }}"{% else %}All services{% endif %}
+            {% if params.has_location %}near you{% elif params.city %}in {{ params.city|title }}{% endif %}</h1>
+          <div class="text-secondary small">{{ total }} verified provider{{ total|pluralize }} found</div>
+        </div>
+        <form method="get" class="d-flex align-items-center gap-2">
+          {% for key, value in request.GET.items %}{% if key != "sort" and key != "page" %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+          <label class="small text-secondary text-nowrap">Sort by</label>
+          <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for value, label in sort_choices %}{% if value != "distance" or params.has_location %}<option value="{{ value }}" {% if value == params.sort %}selected{% endif %}>{{ label }}</option>{% endif %}{% endfor %}
+          </select>
+        </form>
+      </div>
+
+      {% if map_points %}<div id="map" class="mb-3"></div>{% endif %}
+
+      {% if page.object_list %}
+      <div class="row g-3">
+        {% for p in page.object_list %}<div class="col-md-6 col-xl-4">{% include "partials/provider_card.html" %}</div>{% endfor %}
+      </div>
+      {% if page.has_other_pages %}
+      <nav class="mt-4"><ul class="pagination justify-content-center">
+        {% if page.has_previous %}<li class="page-item"><a class="page-link" href="?{% qs_replace page=page.previous_page_number %}">&laquo;</a></li>{% endif %}
+        {% for n in page.paginator.page_range %}<li class="page-item {% if n == page.number %}active{% endif %}"><a class="page-link" href="?{% qs_replace page=n %}">{{ n }}</a></li>{% endfor %}
+        {% if page.has_next %}<li class="page-item"><a class="page-link" href="?{% qs_replace page=page.next_page_number %}">&raquo;</a></li>{% endif %}
+      </ul></nav>
+      {% endif %}
+      {% else %}
+      <div class="empty-state panel">
+        <i class="bi bi-search"></i>
+        <h5 class="mt-3">No providers match yet</h5>
+        <p>Try removing a filter, widening the radius or searching another city.</p>
+        {% if TEST_MODE %}<a href="{% url 'services:test_tools' %}" class="btn btn-outline-primary">Add test providers near you</a>{% endif %}
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{% if map_points %}
+{{ map_points|json_script:"map-data" }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  (function () {
+    const points = JSON.parse(document.getElementById("map-data").textContent);
+    const map = L.map("map", { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18, attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+    const bounds = [];
+    points.forEach(function (p) {
+      const m = L.marker([p.lat, p.lng]).addTo(map);
+      const name = document.createElement("div");
+      name.innerHTML = "<strong></strong><br><span></span><br><a>View profile</a>";
+      name.querySelector("strong").textContent = p.name;
+      name.querySelector("span").textContent = p.category + " · ★ " + p.rating.toFixed(1);
+      name.querySelector("a").href = p.url;
+      m.bindPopup(name);
+      bounds.push([p.lat, p.lng]);
+    });
+    {% if params.has_location %}
+    L.circleMarker([{{ params.lat }}, {{ params.lng }}], { radius: 8, color: "#e11d48", fillOpacity: .9 }).addTo(map).bindPopup("You are here");
+    bounds.push([{{ params.lat }}, {{ params.lng }}]);
+    {% endif %}
+    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+  })();
+</script>
+{% endif %}
+{% endblock %}

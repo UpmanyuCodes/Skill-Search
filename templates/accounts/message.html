@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - Skill Search{% endblock %}
+{% block content %}
+<div class="auth-card text-center">
+  <i class="bi bi-envelope-check text-primary" style="font-size:3rem"></i>
+  <h1 class="h4 fw-bold mt-2">{{ title }}</h1>
+  <p class="text-secondary">{{ text }}</p>
+  <a href="{% url 'accounts:login' %}" class="btn btn-primary">Back to log in</a>
+</div>
+{% endblock %}

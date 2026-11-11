@@ -1,0 +1,145 @@
+{% extends "base.html" %}{% load skill_tags %}
+{% block title %}Dashboard - Skill Search{% endblock %}
+{% block content %}
+<div class="container mt-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+      <h1 class="h3 fw-bold mb-0">Hi, {{ user.first_name|default:user.username }} 👋</h1>
+      <div class="text-secondary">{% if profile %}Manage your service and your own bookings.{% else %}Track your bookings, saved providers and messages.{% endif %}</div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'services:search' %}" class="btn btn-primary"><i class="bi bi-search"></i> Find a service</a>
+      {% if not profile %}<a href="{% url 'accounts:become_provider' %}" class="btn btn-outline-primary">Offer a service</a>{% endif %}
+    </div>
+  </div>
+
+  {% if not user.city and not user.has_location %}
+  <div class="alert alert-info"><i class="bi bi-geo-alt"></i> Add your city or location in <a href="{% url 'accounts:profile' %}">your profile</a> to see providers near you automatically.</div>
+  {% endif %}
+
+  {% if profile %}
+  <!-- Provider section -->
+  <div class="panel mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div>
+        <h4 class="fw-bold mb-1"><i class="bi bi-{{ profile.category.icon }} text-primary"></i> {{ profile.category.name }} &middot; {{ profile.city }}</h4>
+        <span class="badge bg-{{ profile.verification_status|status_color }}{% if profile.verification_status == 'pending' %} text-dark{% endif %}">{{ profile.get_verification_status_display }}</span>
+        {% if profile.verification_note %}<span class="small text-secondary ms-1">{{ profile.verification_note }}</span>{% endif %}
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <form method="post" action="{% url 'accounts:toggle_availability' %}">{% csrf_token %}
+          <button class="btn {% if profile.is_available %}btn-success{% else %}btn-outline-secondary{% endif %}"><i class="bi bi-{% if profile.is_available %}toggle-on{% else %}toggle-off{% endif %}"></i> {% if profile.is_available %}Available{% else %}Busy{% endif %}</button>
+        </form>
+        <a href="{{ profile.get_absolute_url }}" class="btn btn-light"><i class="bi bi-eye"></i> Public page</a>
+        <a href="{% url 'accounts:provider_edit' %}" class="btn btn-light"><i class="bi bi-pencil"></i> Edit listing</a>
+      </div>
+    </div>
+    {% if profile.verification_status == 'pending' %}
+      <div class="alert alert-warning small"><i class="bi bi-hourglass-split"></i> Your profile is waiting for ID verification and is not visible in search yet.
+        {% if TEST_MODE %}<form method="post" action="{% url 'services:test_verify' profile.slug %}" class="d-inline">{% csrf_token %}<input type="hidden" name="next" value="{% url 'accounts:dashboard' %}"><button class="btn btn-sm btn-warning ms-2">Approve myself (test mode)</button></form>{% endif %}</div>
+    {% elif profile.verification_status == 'rejected' %}
+      <div class="alert alert-danger small">Verification failed. Please <a href="{% url 'accounts:provider_edit' %}">upload a clearer ID document</a> to try again.</div>
+    {% endif %}
+    <div class="row g-3">
+      <div class="col-6 col-md"><div class="dash-stat"><div class="num text-warning">{{ stats.pending }}</div><div class="small text-secondary">New requests</div></div></div>
+      <div class="col-6 col-md"><div class="dash-stat"><div class="num text-primary">{{ stats.accepted }}</div><div class="small text-secondary">Upcoming jobs</div></div></div>
+      <div class="col-6 col-md"><div class="dash-stat"><div class="num text-success">{{ stats.completed }}</div><div class="small text-secondary">Completed</div></div></div>
+      <div class="col-6 col-md"><div class="dash-stat"><div class="num">{{ stats.rating|floatformat:1 }} <i class="bi bi-star-fill stars fs-6"></i></div><div class="small text-secondary">{{ stats.reviews }} reviews</div></div></div>
+      <div class="col-6 col-md"><div class="dash-stat"><div class="num">{{ stats.views }}</div><div class="small text-secondary">Profile views</div></div></div>
+      <div class="col-6 col-md"><div class="dash-stat"><div class="num">{{ stats.saved }}</div><div class="small text-secondary">Saved by</div></div></div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <div class="panel h-100">
+        <h5 class="fw-bold">Incoming booking requests</h5>
+        {% for r in incoming %}
+        <div class="request-item">
+          <div class="d-flex justify-content-between flex-wrap gap-2">
+            <div>
+              <div class="fw-semibold">{{ r.title }} {% if r.is_urgent %}<span class="badge bg-danger">Urgent</span>{% endif %}</div>
+              <div class="small text-secondary"><i class="bi bi-person"></i> {{ r.customer.display_name }} &middot; <i class="bi bi-calendar"></i> {{ r.preferred_date|date:"D, d M" }}{% if r.preferred_time %} {{ r.preferred_time|time:"g:i A" }}{% endif %}
+                &middot; <i class="bi bi-geo-alt"></i> {{ r.address }}</div>
+              {% if r.description %}<div class="small mt-1">{{ r.description|truncatechars:160 }}</div>{% endif %}
+              {% if r.status == 'accepted' or r.status == 'pending' %}<div class="small mt-1"><a href="tel:{{ r.contact_phone }}"><i class="bi bi-telephone"></i> {{ r.contact_phone }}</a></div>{% endif %}
+            </div>
+            <span class="badge bg-{{ r.status|status_color }} align-self-start">{{ r.get_status_display }}</span>
+          </div>
+          {% if r.status == 'pending' or r.status == 'accepted' %}
+          <form method="post" class="d-flex flex-wrap gap-2 mt-2 align-items-center">{% csrf_token %}
+            <input name="note" class="form-control form-control-sm" style="max-width:260px" placeholder="Optional note to customer">
+            {% if r.status == 'pending' %}<button formaction="{% url 'services:update_request' r.pk 'accept' %}" class="btn btn-sm btn-success">Accept</button>{% endif %}
+            {% if r.status == 'accepted' %}<button formaction="{% url 'services:update_request' r.pk 'complete' %}" class="btn btn-sm btn-primary">Mark completed</button>{% endif %}
+            <button formaction="{% url 'services:update_request' r.pk 'decline' %}" class="btn btn-sm btn-outline-danger">Decline</button>
+          </form>
+          {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-secondary mb-0">No requests yet. Keep your profile complete and your status "Available" to get more.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="panel h-100">
+        <h5 class="fw-bold">Customer messages</h5>
+        {% for c in provider_conversations %}
+          <a href="{{ c.get_absolute_url }}" class="convo-link"><span class="avatar avatar-sm">{{ c.customer.initials }}</span><span class="flex-grow-1">{{ c.customer.display_name }}</span><span class="small text-secondary">{{ c.updated_at|timesince }}</span></a>
+        {% empty %}<p class="text-secondary small mb-0">No messages yet.</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+  <h4 class="fw-bold mt-2">As a customer</h4>
+  {% endif %}
+
+  <!-- Customer section -->
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="panel h-100">
+        <h5 class="fw-bold">My booking requests</h5>
+        {% for r in my_requests %}
+        <div class="request-item">
+          <div class="d-flex justify-content-between flex-wrap gap-2">
+            <div>
+              <div class="fw-semibold">{{ r.title }}</div>
+              <div class="small text-secondary"><a href="{{ r.provider.get_absolute_url }}">{{ r.provider.name }}</a> ({{ r.provider.category.name }}) &middot; {{ r.preferred_date|date:"D, d M Y" }}{% if r.preferred_time %} {{ r.preferred_time|time:"g:i A" }}{% endif %}</div>
+              {% if r.provider_note %}<div class="small mt-1"><i class="bi bi-chat-quote"></i> "{{ r.provider_note }}"</div>{% endif %}
+            </div>
+            <span class="badge bg-{{ r.status|status_color }} align-self-start">{{ r.get_status_display }}</span>
+          </div>
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            <a href="{% url 'services:start_conversation' r.provider.slug %}" class="btn btn-sm btn-light"><i class="bi bi-chat-dots"></i> Message</a>
+            {% if r.status == 'accepted' %}
+              <form method="post" action="{% url 'services:update_request' r.pk 'complete' %}">{% csrf_token %}<button class="btn btn-sm btn-primary">Job done</button></form>
+            {% endif %}
+            {% if r.status == 'pending' or r.status == 'accepted' %}
+              <form method="post" action="{% url 'services:update_request' r.pk 'cancel' %}" onsubmit="return confirm('Cancel this request?')">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Cancel</button></form>
+            {% endif %}
+            {% if r.can_review %}<a href="{% url 'services:review' r.pk %}" class="btn btn-sm btn-warning"><i class="bi bi-star"></i> Leave a review</a>{% endif %}
+            {% if r.status == 'completed' and not r.can_review %}<span class="small text-success align-self-center"><i class="bi bi-check2"></i> Reviewed</span>{% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <div class="empty-state py-4"><i class="bi bi-calendar2-plus"></i><p class="mt-2 mb-2">No bookings yet.</p><a href="{% url 'services:search' %}" class="btn btn-sm btn-primary">Find a provider</a></div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="panel mb-4">
+        <div class="d-flex justify-content-between"><h5 class="fw-bold">Saved providers</h5><a href="{% url 'services:favorites' %}" class="small">All</a></div>
+        {% for f in favorites %}
+          <a href="{{ f.provider.get_absolute_url }}" class="convo-link"><span class="avatar avatar-sm">{{ f.provider.user.initials }}</span>
+            <span class="flex-grow-1">{{ f.provider.name }}<br><span class="small text-secondary">{{ f.provider.category.name }}</span></span>
+            <span class="small">{% stars f.provider.rating_avg %}</span></a>
+        {% empty %}<p class="text-secondary small mb-0">Tap the heart on a provider to save them.</p>{% endfor %}
+      </div>
+      <div class="panel">
+        <div class="d-flex justify-content-between"><h5 class="fw-bold">Messages</h5><a href="{% url 'services:inbox' %}" class="small">Inbox</a></div>
+        {% for c in conversations %}
+          <a href="{{ c.get_absolute_url }}" class="convo-link"><span class="avatar avatar-sm">{{ c.provider.user.initials }}</span><span class="flex-grow-1">{{ c.provider.name }}</span><span class="small text-secondary">{{ c.updated_at|timesince }}</span></a>
+        {% empty %}<p class="text-secondary small mb-0">No conversations yet.</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

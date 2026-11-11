@@ -1,0 +1,59 @@
+{% load skill_tags %}
+{% for e in form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ e }}</div>{% endfor %}
+<div class="form-card mb-4">
+  <h5><i class="bi bi-briefcase text-primary"></i> Your service</h5>
+  <div class="row">
+    {% field form.category "col-md-6 mb-3" %}
+    {% field form.experience_years "col-md-6 mb-3" %}
+    {% field form.headline "col-12 mb-3" %}
+    {% field form.bio "col-12 mb-3" %}
+    {% field form.skills "col-md-7 mb-3" %}
+    {% field form.languages "col-md-5 mb-3" %}
+    {% field form.rate "col-md-6 mb-3" %}
+    {% field form.rate_unit "col-md-6 mb-3" %}
+  </div>
+</div>
+<div class="form-card mb-4">
+  <h5><i class="bi bi-geo-alt text-primary"></i> Where you work</h5>
+  <div class="row">
+    {% field form.city "col-md-4 mb-3" %}
+    {% field form.area "col-md-4 mb-3" %}
+    {% field form.pincode "col-md-4 mb-3" %}
+    {% field form.service_radius_km "col-md-4 mb-3" %}
+    <div class="col-md-8 mb-3">
+      <label class="form-label">Map location</label>
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" data-locate data-lat="#{{ form.latitude.id_for_label }}" data-lng="#{{ form.longitude.id_for_label }}" data-status="#prov-loc"><i class="bi bi-crosshair"></i> Use my current location</button>
+        <span id="prov-loc" class="small {% if form.latitude.value %}text-success{% else %}text-secondary{% endif %}">{% if form.latitude.value %}Location saved &check;{% else %}Lets customers find you by distance.{% endif %}</span>
+      </div>
+      {{ form.latitude }}{{ form.longitude }}
+    </div>
+  </div>
+</div>
+<div class="form-card mb-4">
+  <h5><i class="bi bi-telephone text-primary"></i> Contact &amp; availability</h5>
+  <div class="row">
+    {% field form.phone "col-md-4 mb-3" %}
+    {% field form.whatsapp "col-md-4 mb-3" %}
+    {% field form.working_hours "col-md-4 mb-3" %}
+    {% field form.show_phone "col-md-6 mb-2" %}
+    {% field form.is_available "col-md-6 mb-2" %}
+    {% field form.home_visit "col-md-6 mb-2" %}
+    {% field form.emergency_service "col-md-6 mb-2" %}
+  </div>
+</div>
+<div class="form-card mb-4">
+  <h5><i class="bi bi-shield-check text-success"></i> Identity verification</h5>
+  {% if form.verification_required %}
+    <p class="small text-secondary">Upload a clear photo or PDF of a government ID. An admin will check it before your profile goes live. Your document is never shown to customers.</p>
+  {% elif TEST_MODE %}
+    <div class="alert alert-warning small py-2"><i class="bi bi-cone-striped"></i> Test mode: documents are optional. You can approve yourself from the <a href="{% url 'services:test_tools' %}">testing page</a>.</div>
+  {% else %}
+    <p class="small text-secondary">Your documents are on file. Upload a new one only if asked to.</p>
+  {% endif %}
+  <div class="row">
+    {% field form.id_type "col-md-4 mb-3" %}
+    {% field form.id_number "col-md-4 mb-3" %}
+    {% field form.id_document "col-md-4 mb-3" %}
+  </div>
+</div>

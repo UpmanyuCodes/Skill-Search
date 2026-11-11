@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Messages - Skill Search{% endblock %}
+{% block content %}
+<div class="container mt-3" style="max-width:800px">
+  <h1 class="h3 fw-bold mb-3"><i class="bi bi-chat-dots"></i> Messages</h1>
+  <div class="panel">
+    {% for c in conversations %}
+      {% if c.customer == user %}{% with other=c.provider.user %}
+      <a href="{{ c.get_absolute_url }}" class="convo-link">
+        <span class="avatar">{{ other.initials }}</span>
+        <div class="flex-grow-1"><div class="fw-semibold">{{ other.display_name }} <span class="small text-secondary fw-normal">&middot; {{ c.provider.category.name }}</span></div>
+          <div class="small text-secondary">Updated {{ c.updated_at|timesince }} ago</div></div>
+        {% if c.unread %}<span class="badge bg-danger rounded-pill">{{ c.unread }}</span>{% endif %}
+      </a>{% endwith %}
+      {% else %}{% with other=c.customer %}
+      <a href="{{ c.get_absolute_url }}" class="convo-link">
+        <span class="avatar">{{ other.initials }}</span>
+        <div class="flex-grow-1"><div class="fw-semibold">{{ other.display_name }} <span class="badge bg-primary-subtle text-primary fw-normal">Customer</span></div>
+          <div class="small text-secondary">Updated {{ c.updated_at|timesince }} ago</div></div>
+        {% if c.unread %}<span class="badge bg-danger rounded-pill">{{ c.unread }}</span>{% endif %}
+      </a>{% endwith %}
+      {% endif %}
+    {% empty %}
+      <div class="empty-state"><i class="bi bi-chat-square-text"></i><h5 class="mt-3">No conversations yet</h5>
+        <p>Open a provider's profile and choose "Send a message" to start chatting.</p></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

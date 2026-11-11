@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load skill_tags %}
+{% block title %}My profile - Skill Search{% endblock %}
+{% block content %}
+<div class="container mt-3" style="max-width:720px">
+  <h1 class="fw-bold">My profile</h1>
+  <form method="post" enctype="multipart/form-data" class="form-card">{% csrf_token %}
+    <div class="row">
+      {% field form.first_name "col-md-6 mb-3" %}
+      {% field form.last_name "col-md-6 mb-3" %}
+      {% field form.email "col-md-6 mb-3" %}
+      {% field form.phone "col-md-6 mb-3" %}
+      {% field form.address "col-12 mb-3" %}
+      {% field form.city "col-md-6 mb-3" %}
+      {% field form.pincode "col-md-6 mb-3" %}
+      {% field form.avatar "col-12 mb-3" %}
+      <div class="col-12 mb-3">
+        <label class="form-label">Home location (for "near me" results)</label>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-outline-primary btn-sm" data-locate data-lat="#id_latitude" data-lng="#id_longitude" data-status="#me-loc"><i class="bi bi-crosshair"></i> Use my current location</button>
+          <span id="me-loc" class="small {% if form.latitude.value %}text-success{% else %}text-secondary{% endif %}">{% if form.latitude.value %}Location saved &check;{% else %}Not set{% endif %}</span>
+        </div>
+        {{ form.latitude }}{{ form.longitude }}
+      </div>
+    </div>
+    <div class="d-flex justify-content-between align-items-center">
+      <a href="{% url 'accounts:password_change' %}" class="small">Change password</a>
+      <button class="btn btn-primary">Save profile</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

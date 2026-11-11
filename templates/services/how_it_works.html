@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}How it works - Skill Search{% endblock %}
+{% block content %}
+<div class="container mt-3" style="max-width:960px">
+  <h1 class="fw-bold">How Skill Search works</h1>
+  <p class="lead text-secondary">Skill Search is a neighbourhood directory of verified local professionals. Customers find help nearby; skilled workers get steady local work without paying middlemen.</p>
+
+  <div class="row g-4 mt-2">
+    <div class="col-md-6"><div class="panel h-100">
+      <h4 class="fw-bold"><i class="bi bi-person text-primary"></i> For customers</h4>
+      <ol class="mb-0">
+        <li class="mb-2"><strong>Search</strong> by service, keyword (e.g. "geyser", "maths tuition"), city/pincode or your live location.</li>
+        <li class="mb-2"><strong>Filter</strong> by rating, price, distance, emergency service and availability. See results on a map.</li>
+        <li class="mb-2"><strong>Contact</strong> the way you like: phone call, WhatsApp, email, in-app chat or a booking request with your preferred date and time.</li>
+        <li class="mb-2"><strong>Track</strong> bookings on your dashboard: pending, accepted, completed.</li>
+        <li><strong>Review</strong> the provider after the job &mdash; only real, completed bookings can be reviewed.</li>
+      </ol>
+    </div></div>
+    <div class="col-md-6"><div class="panel h-100">
+      <h4 class="fw-bold"><i class="bi bi-tools text-primary"></i> For service providers</h4>
+      <ol class="mb-0">
+        <li class="mb-2"><strong>Register</strong> with your service, skills, experience, prices, working hours and the area you cover.</li>
+        <li class="mb-2"><strong>Upload an ID</strong> (Aadhaar, PAN, Voter ID, Driving licence or Passport) for verification.</li>
+        <li class="mb-2"><strong>Get verified</strong> by our team &mdash; only then does your profile appear in search.</li>
+        <li class="mb-2"><strong>Receive requests</strong>, chat with customers, accept or decline jobs and mark them complete.</li>
+        <li><strong>Build reputation</strong> with ratings, and switch to "busy" whenever you're fully booked.</li>
+      </ol>
+    </div></div>
+  </div>
+
+  <div class="panel mt-4" id="verification">
+    <h4 class="fw-bold"><i class="bi bi-shield-check text-success"></i> Verification &amp; safety</h4>
+    <ul class="mb-0">
+      <li>Every provider must upload a government ID. We store only the last 4 characters of the ID number.</li>
+      <li>Admins review documents and approve or reject providers. Rejected providers can re-upload.</li>
+      <li>Phone numbers are shown only to logged-in users, and providers can hide them and use in-app chat only.</li>
+      <li>Anyone can report a profile for fake identity, fraud, behaviour or no-shows. Reports go straight to the admin team.</li>
+      <li>Reviews are tied to completed bookings, so ratings can't be faked by strangers.</li>
+    </ul>
+  </div>
+
+  <div class="text-center mt-5">
+    <a href="{% url 'services:search' %}" class="btn btn-primary btn-lg me-2">Find a service</a>
+    <a href="{% url 'accounts:signup_provider' %}" class="btn btn-outline-primary btn-lg">Join as a provider</a>
+  </div>
+</div>
+{% endblock %}

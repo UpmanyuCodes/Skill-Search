@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Chat with {{ other.display_name }} - Skill Search{% endblock %}
+{% block content %}
+<div class="container mt-3">
+  <div class="row g-4">
+    <div class="col-lg-4 d-none d-lg-block">
+      <div class="panel p-2">
+        <div class="px-2 pt-2 pb-1 fw-bold">Conversations</div>
+        {% for c in conversations %}
+          <a href="{{ c.get_absolute_url }}" class="convo-link {% if c.pk == convo.pk %}active{% endif %}">
+            {% if c.customer == user %}<span class="avatar avatar-sm">{{ c.provider.user.initials }}</span><span class="flex-grow-1">{{ c.provider.user.display_name }}</span>
+            {% else %}<span class="avatar avatar-sm">{{ c.customer.initials }}</span><span class="flex-grow-1">{{ c.customer.display_name }}</span>{% endif %}
+            {% if c.unread and c.pk != convo.pk %}<span class="badge bg-danger rounded-pill">{{ c.unread }}</span>{% endif %}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="panel">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <a href="{% url 'services:inbox' %}" class="d-lg-none"><i class="bi bi-arrow-left fs-4"></i></a>
+          <span class="avatar">{{ other.initials }}</span>
+          <div class="flex-grow-1">
+            <div class="fw-bold">{{ other.display_name }}</div>
+            {% if other == convo.provider.user %}<a class="small" href="{{ convo.provider.get_absolute_url }}">{{ convo.provider.category.name }} &middot; view profile</a>
+            {% else %}<span class="small text-secondary">Customer{% if other.city %} from {{ other.city }}{% endif %}</span>{% endif %}
+          </div>
+          {% if other == convo.provider.user and convo.provider.show_phone %}
+            <a href="tel:{{ convo.provider.phone }}" class="btn btn-sm btn-success"><i class="bi bi-telephone"></i></a>
+          {% elif other.phone %}
+            <a href="tel:{{ other.phone }}" class="btn btn-sm btn-success"><i class="bi bi-telephone"></i></a>
+          {% endif %}
+        </div>
+        <div class="chat-window" id="chat-window">
+          {% for m in chat_messages %}
+            <div class="bubble {% if m.sender == user %}me{% else %}them{% endif %}">{{ m.body }}<span class="time">{{ m.created_at|date:"d M, H:i" }}{% if m.sender == user and m.is_read %} &middot; seen{% endif %}</span></div>
+          {% empty %}
+            <div class="text-center text-secondary small py-5">Say hello and describe what you need.</div>
+          {% endfor %}
+          <div id="bottom"></div>
+        </div>
+        <form method="post" class="d-flex gap-2 mt-3">{% csrf_token %}
+          <div class="flex-grow-1">{{ form.body }}</div>
+          <button class="btn btn-primary align-self-end"><i class="bi bi-send"></i></button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

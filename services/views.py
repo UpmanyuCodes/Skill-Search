@@ -1,5 +1,3 @@
-import json
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -57,7 +55,7 @@ def search(request):
         "categories": Category.objects.all(),
         "sort_choices": SORT_CHOICES,
         "favorite_ids": favorite_ids,
-        "map_points": json.dumps(map_points),
+        "map_points": map_points,
         "querystring": query.urlencode(),
     })
 
@@ -202,7 +200,8 @@ def toggle_favorite(request, slug):
 @login_required
 def favorites(request):
     favs = Favorite.objects.filter(user=request.user).select_related("provider__user", "provider__category")
-    return render(request, "services/favorites.html", {"favorites": favs})
+    return render(request, "services/favorites.html", {
+        "favorites": favs, "favorite_ids": {f.provider_id for f in favs}})
 
 
 @login_required

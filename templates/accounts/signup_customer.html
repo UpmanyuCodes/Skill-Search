@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% load skill_tags %}
+{% block title %}Create account - Skill Search{% endblock %}
+{% block content %}
+<div class="auth-card" style="max-width:560px">
+  <h1 class="h4 fw-bold mb-1">Create your free account</h1>
+  <p class="text-secondary small mb-4">Contact and book local professionals in minutes.</p>
+  <form method="post">{% csrf_token %}
+    {% for e in form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ e }}</div>{% endfor %}
+    <div class="row">
+      {% field form.first_name "col-md-6 mb-3" %}
+      {% field form.last_name "col-md-6 mb-3" %}
+      {% field form.username "col-md-6 mb-3" %}
+      {% field form.email "col-md-6 mb-3" %}
+      {% field form.phone "col-md-6 mb-3" %}
+      {% field form.city "col-md-6 mb-3" %}
+      {% field form.password1 "col-md-6 mb-3" %}
+      {% field form.password2 "col-md-6 mb-3" %}
+    </div>
+    <button class="btn btn-primary w-100">Create account</button>
+  </form>
+  <p class="small text-center mt-3 mb-0">Offer a service instead? <a href="{% url 'accounts:signup_provider' %}">Register as a provider</a></p>
+</div>
+{% endblock %}

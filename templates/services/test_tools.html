@@ -1,0 +1,50 @@
+{% extends "base.html" %}{% load skill_tags %}
+{% block title %}Testing tools - Skill Search{% endblock %}
+{% block content %}
+<div class="container mt-3">
+  <div class="alert alert-warning"><i class="bi bi-cone-striped"></i> <strong>Test mode only.</strong>
+    This page skips real ID verification so you can try the site quickly. It disappears when <code>SKILLSEARCH_TEST_MODE</code> is off (the default when <code>DJANGO_DEBUG=False</code>).</div>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="form-card">
+        <h5><i class="bi bi-person-plus"></i> Add test service providers</h5>
+        <p class="small text-secondary">Creates instantly-verified providers with realistic names, skills, prices and reviews-ready profiles. Password for all of them: <code>testpass123</code>.</p>
+        <form method="post">{% csrf_token %}
+          {% for f in form %}{% field f %}{% endfor %}
+          <button type="button" class="btn btn-outline-secondary btn-sm mb-3" data-locate data-lat="#id_latitude" data-lng="#id_longitude" data-status="#loc-status"><i class="bi bi-crosshair"></i> Use my browser location</button>
+          <div id="loc-status" class="small mb-2">{% if form.initial.latitude %}Using your saved profile location.{% endif %}</div>
+          <button class="btn btn-primary w-100">Create provider(s)</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      {% if created %}
+      <div class="panel mb-4">
+        <h5 class="fw-bold">Just created</h5>
+        <ul class="list-unstyled mb-0">
+          {% for p in created %}<li class="py-1"><a href="{{ p.get_absolute_url }}">{{ p.name }}</a> &middot; {{ p.category.name }} &middot; {{ p.city }} <span class="text-secondary small">(login: <code>{{ p.user.username }}</code>)</span></li>{% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="panel mb-4">
+        <h5 class="fw-bold">Providers waiting for verification</h5>
+        <p class="small text-secondary">Real sign-ups land here. In production an admin checks the ID document in the <a href="{% url 'admin:services_providerprofile_changelist' %}?verification_status__exact=pending">admin panel</a>; in test mode you can approve them in one click.</p>
+        {% for p in pending %}
+        <div class="d-flex justify-content-between align-items-center border-top py-2">
+          <div><a href="{{ p.get_absolute_url }}">{{ p.name }}</a> <span class="small text-secondary">&middot; {{ p.category.name }} &middot; {{ p.city }}{% if p.id_document %} &middot; <i class="bi bi-file-earmark-check"></i> document uploaded{% endif %}</span></div>
+          <form method="post" action="{% url 'services:test_verify' p.slug %}">{% csrf_token %}<button class="btn btn-sm btn-success">Approve</button></form>
+        </div>
+        {% empty %}<p class="text-secondary small mb-0">No pending providers.</p>{% endfor %}
+      </div>
+
+      <div class="panel">
+        <h5 class="fw-bold">Recent test providers</h5>
+        {% for p in recent_tests %}
+          <div class="border-top py-2 small"><a href="{{ p.get_absolute_url }}">{{ p.name }}</a> &middot; {{ p.category.name }} &middot; {% if p.area %}{{ p.area }}, {% endif %}{{ p.city }} &middot; <code>{{ p.user.username }}</code></div>
+        {% empty %}<p class="text-secondary small mb-0">None yet. Tip: run <code>python manage.py seed_demo</code> to fill the site with 60 providers and reviews.</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

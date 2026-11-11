@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% load skill_tags %}
+{% block title %}Register as a service provider - Skill Search{% endblock %}
+{% block content %}
+<div class="container mt-3" style="max-width:900px">
+  <h1 class="fw-bold">List your service</h1>
+  <p class="text-secondary">Free registration. Your profile goes live once your ID is verified.</p>
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <div class="form-card mb-4">
+      <h5><i class="bi bi-person text-primary"></i> Your account</h5>
+      {% for e in user_form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ e }}</div>{% endfor %}
+      <div class="row">
+        {% field user_form.first_name "col-md-6 mb-3" %}
+        {% field user_form.last_name "col-md-6 mb-3" %}
+        {% field user_form.username "col-md-6 mb-3" %}
+        {% field user_form.email "col-md-6 mb-3" %}
+        {% field user_form.password1 "col-md-6 mb-3" %}
+        {% field user_form.password2 "col-md-6 mb-3" %}
+      </div>
+      {{ user_form.phone.as_hidden }}{{ user_form.city.as_hidden }}
+    </div>
+    {% include "accounts/_provider_fields.html" with form=profile_form %}
+    <button class="btn btn-primary btn-lg w-100 mb-4">Register &amp; submit for verification</button>
+  </form>
+</div>
+{% endblock %}

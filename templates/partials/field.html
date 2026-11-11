@@ -1,0 +1,17 @@
+{% if f.field.widget.input_type == "hidden" %}{{ f }}{% elif f.field.widget.input_type == "checkbox" %}
+<div class="{{ col|default:'mb-3' }}">
+  <div class="form-check form-switch">
+    {{ f }}
+    <label class="form-check-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+  </div>
+  {% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+  {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+</div>
+{% else %}
+<div class="{{ col|default:'mb-3' }}">
+  <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <span class="text-danger">*</span>{% endif %}</label>
+  {{ f }}
+  {% if f.help_text %}<div class="form-text">{{ f.help_text|safe }}</div>{% endif %}
+  {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+</div>
+{% endif %}
