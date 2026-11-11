@@ -92,8 +92,8 @@
   (function () {
     const points = JSON.parse(document.getElementById("map-data").textContent);
     const map = L.map("map", { scrollWheelZoom: false });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 18, attribution: "&copy; OpenStreetMap contributors"
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { subdomains: "abcd",
+      maxZoom: 18, attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
     }).addTo(map);
     const bounds = [];
     points.forEach(function (p) {

@@ -155,7 +155,7 @@
   (function () {
     const lat = {{ provider.latitude|stringformat:"f" }}, lng = {{ provider.longitude|stringformat:"f" }};
     const map = L.map("map", { scrollWheelZoom: false }).setView([lat, lng], 13);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { subdomains: "abcd", maxZoom: 18, attribution: "&copy; OpenStreetMap contributors &copy; CARTO" }).addTo(map);
     L.circle([lat, lng], { radius: {{ provider.service_radius_km }} * 1000, color: "#4f46e5", fillOpacity: .08 }).addTo(map);
     L.marker([lat, lng]).addTo(map).bindPopup("Approximate service area");
   })();
